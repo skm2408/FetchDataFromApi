@@ -25,7 +25,7 @@ class GitHubAdapter(var user:ArrayList<GitHubUser>):RecyclerView.Adapter<GitHubA
         holder.itemView.tvhtml.text=user[position].html_url
         holder.itemView.tvavtar.text=user[position].avtar_url
         holder.itemView.tvscore.text= user[position].score.toString()
-        Picasso.get().load(user[position].avtar_url).resize(1000,1000).onlyScaleDown().into(holder.itemView.imageView);
+        Picasso.get().load(user[position].avtar_url).resize(1000,1000).placeholder(R.drawable.person).error(R.drawable.errorimage).onlyScaleDown().into(holder.itemView.imageView);
 
     }
 
