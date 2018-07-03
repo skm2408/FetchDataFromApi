@@ -7,6 +7,7 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONException
 import org.json.JSONObject
@@ -29,12 +30,22 @@ class MainActivity : AppCompatActivity() {
     }
     inner class GetData:AsyncTask<String,Unit,String>()
     {
+        override fun onPreExecute() {
+            super.onPreExecute()
+            showProgress.visibility=View.VISIBLE
+            showProgress.setProgress(0)
+            showProgress.max=100
+            var progressBarStatus=0
+        }
+
         override fun onPostExecute(result: String?) {
             super.onPostExecute(result)
             val users=parseJason(result)
             val gitHubAdapter=GitHubAdapter(users)
             recycleView.layoutManager=LinearLayoutManager(this@MainActivity)
             recycleView.adapter=gitHubAdapter
+            Toast.makeText(this@MainActivity,"${users.size} results found!",Toast.LENGTH_SHORT).show()
+            showProgress.visibility=View.GONE
         }
 
         override fun doInBackground(vararg params: String?): String? {
