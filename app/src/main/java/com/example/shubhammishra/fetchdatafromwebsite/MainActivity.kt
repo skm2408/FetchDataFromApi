@@ -8,7 +8,9 @@ import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import com.example.shubhammishra.fetchdatafromwebsite.R.id.*
 import kotlinx.android.synthetic.main.activity_main.*
+import okhttp3.*
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.*
@@ -25,8 +27,40 @@ class MainActivity : AppCompatActivity() {
         btnSearch.setOnClickListener(View.OnClickListener {
             val name=etUrl.text.toString()
             val url="https://api.github.com/search/users?q=$name"
-            GetData().execute(url)
+            try {
+                networkCall(url)
+            }
+            catch (e:IOException)
+            {
+                e.printStackTrace()
+            }
+            //GetData().execute(url)
         })
+    }
+    fun networkCall(url:String):Unit
+    {
+         val client=OkHttpClient()
+         val request=Request.Builder().url(url).build()
+          showProgress.visibility=View.VISIBLE
+        client.newCall(request).enqueue(object :Callback{
+            override fun onFailure(call: Call?, e: IOException?) {
+                Toast.makeText(this@MainActivity,"Failed to load url request",Toast.LENGTH_SHORT).show()
+            }
+            override fun onResponse(call: Call?, response: Response?) {
+                val result= response!!.body()!!.string()
+                val users=parseJason(result)
+                val gitHubAdapter=GitHubAdapter(users)
+                this@MainActivity.runOnUiThread(object:Runnable{
+                    override fun run() {
+                        recycleView.layoutManager=LinearLayoutManager(this@MainActivity)
+                        recycleView.adapter=gitHubAdapter
+                        Toast.makeText(this@MainActivity,"${users.size} results found!",Toast.LENGTH_SHORT).show()
+                        showProgress.visibility=View.GONE
+                    }
+                })
+            }
+        })
+
     }
     inner class GetData:AsyncTask<String,Unit,String>()
     {
@@ -34,8 +68,7 @@ class MainActivity : AppCompatActivity() {
             super.onPreExecute()
             showProgress.visibility=View.VISIBLE
             showProgress.setProgress(0)
-            showProgress.max=100
-            var progressBarStatus=0
+            showProgress.max=2000
         }
 
         override fun onPostExecute(result: String?) {
